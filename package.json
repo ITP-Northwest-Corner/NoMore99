@@ -1,0 +1,21 @@
+{
+  "name": "nomore99",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "start": "web-ext run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ITP-Northwest-Corner/NoMore99.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/ITP-Northwest-Corner/NoMore99/issues"
+  },
+  "homepage": "https://github.com/ITP-Northwest-Corner/NoMore99#readme",
+  "devDependencies": {
+    "web-ext": "^7.8.0"
+  }
+}
