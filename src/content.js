@@ -28,12 +28,15 @@ function get_dollar_amount(node, currency_symbol) {
 		return false;
 	}
 	const text = to_text_visitor(node);
+	if (text.length > 20) {
+		// Too long, we probably shouldn't replace it
+		return false;
+	}
 	const regex = new RegExp(`${currency_symbol}[A-z]*\\s?(\\d+)(?:[\\.,](\\d{1,2}))?`, 'g');
 	const matches = text.matchAll(regex);
 	let unmatched = text.length;
 	let output = undefined;
 	for (const [matched_str, whole, decimal] of matches) {
-		debugger;
 		const new_output = Number.parseFloat(`${whole}.${decimal || 0}`);
 		unmatched -= matched_str.length;
 		output = output || new_output;
