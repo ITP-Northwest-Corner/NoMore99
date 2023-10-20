@@ -7,11 +7,6 @@ body {
 
 h1#title {
 	text-align: center;
-	position: absolute;
-	top: -2.5%;
-	left: 0;
-	height: 12.5%;
-	width: 100%;
 	border-bottom-style: inset;
 	border-bottom-width: 2px;
 	border-bottom-color: black;

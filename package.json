@@ -26,7 +26,8 @@
   "xo": {
     "globals": [
       "window",
-      "document"
+      "document",
+      "browser"
     ]
   }
 }

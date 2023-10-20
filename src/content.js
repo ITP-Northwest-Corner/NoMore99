@@ -86,22 +86,30 @@ function findDollarAmounts(node, currencySymbol, threshold) {
 const ourNodes = [];
 let timer = 250;
 
-function go() {
+function go(doTimer = true) {
 	console.log('Running!');
 	const found = findDollarAmounts(document, '\\$', 0.4);
 	for (const {node, amount} of found) {
+		ourNodes.push({node, amount});
 		for (const child of Array.from(node.childNodes)) {
 			child.remove();
 		}
-
-		node.textContent = `${Math.floor(amount)}d ${Math.floor((amount % 1) * 100)}c`;
-		ourNodes.push({node, amount});
 	}
 
-	timer *= 1.5;
-	timer = Math.min(6000, timer);
-	window.setTimeout(go, timer);
-	console.log(`Waiting ${timer}ms until next run`);
+	for (const {node, amount} of ourNodes) {
+		node.textContent = `${Math.floor(amount)}d ${Math.floor((amount % 1) * 100)}c`;
+	}
+
+	if (doTimer) {
+		timer *= 2;
+		timer = Math.min(6000, timer);
+		window.setTimeout(go, timer);
+		console.log(`Waiting ${timer}ms until next run`);
+	}
 }
 
 go();
+
+browser.runtime.onMessage.addListener((_message, _sender, _response) => {
+	go(false);
+});
