@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "start": "web-ext run",
+    "start-chrome": "web-ext run -t chromium",
     "build": "web-ext build",
     "web-ext": "web-ext",
     "lint": "xo"
