@@ -93,7 +93,7 @@ async function go(doTimer = true) {
 	console.log('Running!');
 	const found = findDollarAmounts(document, '\\$', 0.4);
 	for (const {node, amount} of found) {
-		const existing = ourNodes.filter(({node: otherNode, amount: _}) => node === otherNode);
+		const existing = ourNodes.some(({node: otherNode, amount: _}) => node === otherNode);
 		if (!existing) {
 			ourNodes.push({node, amount});
 		}
