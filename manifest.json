@@ -19,5 +19,8 @@
 			"48": "img/nomore99.svg"
 		}
 	},
+	"permissions": [
+		"storage"
+	],
 	"version": "0.0.1"
 }

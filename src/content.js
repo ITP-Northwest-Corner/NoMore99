@@ -1,3 +1,6 @@
+// Const g = storage.local.get;
+// const s = storage.local.set;
+
 /**
  * Takes in a node, and returns the node's content as text.
  * @param {Node} node
@@ -86,18 +89,26 @@ function findDollarAmounts(node, currencySymbol, threshold) {
 const ourNodes = [];
 let timer = 250;
 
-function go(doTimer = true) {
+async function go(doTimer = true) {
 	console.log('Running!');
 	const found = findDollarAmounts(document, '\\$', 0.4);
 	for (const {node, amount} of found) {
-		ourNodes.push({node, amount});
+		const existing = ourNodes.filter(({node: otherNode, amount: _}) => node === otherNode);
+		if (!existing) {
+			ourNodes.push({node, amount});
+		}
+
 		for (const child of Array.from(node.childNodes)) {
 			child.remove();
 		}
 	}
 
+	const {doReplace} = await browser.storage.local.get('doReplace');
+	console.log(doReplace);
 	for (const {node, amount} of ourNodes) {
-		node.textContent = `${Math.floor(amount)}d ${Math.floor((amount % 1) * 100)}c`;
+		node.textContent = doReplace
+			? `${Math.floor(amount)}d ${Math.floor((amount % 1) * 100)}c`
+			: `$${Math.floor(amount)}.${Math.floor((amount % 1) * 100)}`;
 	}
 
 	if (doTimer) {
@@ -108,8 +119,13 @@ function go(doTimer = true) {
 	}
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 go();
 
 browser.runtime.onMessage.addListener((_message, _sender, _response) => {
+	go(false);
+});
+
+browser.storage.local.onChanged.addListener(() => {
 	go(false);
 });
