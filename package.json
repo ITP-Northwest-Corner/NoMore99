@@ -27,7 +27,8 @@
     "globals": [
       "window",
       "document",
-      "browser"
+      "browser",
+      "storage"
     ]
   }
 }
