@@ -28,7 +28,8 @@
       "window",
       "document",
       "browser",
-      "storage"
+      "storage",
+      "process"
     ]
   }
 }
