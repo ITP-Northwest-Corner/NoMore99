@@ -16,13 +16,14 @@ browser.storage.local.get('units').then(units => {
 });
 
 qs('#rerun').addEventListener('click', async _event => {
+	await pushToStorage();
 	const query = await browser.tabs.query({currentWindow: true, active: true});
 	for (const tab of query) {
 		browser.tabs.sendMessage(tab.id, {});
 	}
 });
 
-qs('#do_replace, .unit').addEventListener('change', pushToStorage);
+// Qs('#do_replace, .unit').addEventListener('change', pushToStorage);
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
 pullFromStorage();
