@@ -122,10 +122,10 @@ const conversions = {
 			const hours = Math.floor(cost);
 			const minutes = Math.floor((cost * 60) - (hours * 60));
 			if (Math.abs(convertBetween(price, units.DOLLARS, units.hours || 20) % 1) < 0.2) {
-				return `${Math.round(hours)}`;
+				return `${Math.round(hours)}h`;
 			}
 
-			return `${hours}:${minutes}`;
+			return `${hours}h${minutes}m`;
 		},
 	},
 };
@@ -137,10 +137,12 @@ function pickConvert(price) {
 		.map(name => conversions[name].convert);
 
 	if (functions.length === 0) {
-		return conversions.fallback;
+		return conversions.fallback.convert;
 	}
 
-	return functions[Math.floor(Math.random() * functions.length())];
+	const convert = functions[Math.floor(Math.random() * functions.length())];
+	console.log(convert);
+	return convert;
 }
 
 /**
@@ -157,10 +159,9 @@ async function go(doTimer = true) {
 		const existing = ourNodes.some(({node: otherNode, amount: _, convert: __}) => node === otherNode);
 		if (!existing) {
 			ourNodes.push({node, amount, convert: pickConvert(amount)});
-		}
-
-		for (const child of Array.from(node.childNodes)) {
-			child.remove();
+			for (const child of Array.from(node.childNodes)) {
+				child.remove();
+			}
 		}
 	}
 
