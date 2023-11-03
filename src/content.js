@@ -83,31 +83,93 @@ function findDollarAmounts(node, currencySymbol, threshold) {
 	}];
 }
 
+/***
+ * @type {Object.<string, number>}
+ */
+const units = {DOLLARS: 1, ...browser.storage.local.get('units').units};
+
+function convertBetween(quantity, from, to) {
+	return (quantity * from) / to;
+}
+
+/***
+ * @type {Object.<string, {applicable: (number) => boolean, convert: (number) => string}}
+ */
+const conversions = {
+	pickAUnit: {
+		applicable(_price) {
+			return Object.keys(units)
+				.some(name => !['DOLLARS', 'hours'].includes(name));
+		},
+		get convert() {
+			const strangeUnits = Object.keys(units)
+				.filter(name => !['DOLLARS', 'hours'].includes(name));
+			const unit = strangeUnits[Math.floor(Math.random() * strangeUnits.length)];
+			return price => {
+				const converted = convertBetween(price, units.DOLLARS, units[unit]);
+				if (Math.abs(converted % 1) < 0.2) {
+					return `${Math.round(price)} ${unit}`;
+				}
+
+				return `${price} ${unit}`;
+			};
+		},
+	},
+	fallback: {
+		applicable: _ => false,
+		convert(price) {
+			const cost = convertBetween(price, units.DOLLARS, units.hours || 20);
+			const hours = Math.floor(cost);
+			const minutes = Math.floor((cost * 60) - (hours * 60));
+			if (Math.abs(convertBetween(price, units.DOLLARS, units.hours || 20) % 1) < 0.2) {
+				return `${Math.round(hours)}h`;
+			}
+
+			return `${hours}h${minutes}m`;
+		},
+	},
+};
+
+function pickConvert(price) {
+	const functions = Object
+		.keys(conversions)
+		.filter(name => conversions[name].applicable(price))
+		.map(name => conversions[name].convert);
+
+	if (functions.length === 0) {
+		return conversions.fallback.convert;
+	}
+
+	const convert = functions[Math.floor(Math.random() * functions.length())];
+	console.log(convert);
+	return convert;
+}
+
 /**
- * @type {Array<{node: Node, amount: number}>}
+ * @type {Array<{node: Node, amount: number, convert: (number) => string}>}
  */
 const ourNodes = [];
 let timer = 250;
 
 async function go(doTimer = true) {
 	console.log('Running!');
+	Object.assign(units, browser.storage.local.get('units').units);
 	const found = findDollarAmounts(document, '\\$', 0.4);
 	for (const {node, amount} of found) {
-		const existing = ourNodes.some(({node: otherNode, amount: _}) => node === otherNode);
+		const existing = ourNodes.some(({node: otherNode, amount: _, convert: __}) => node === otherNode);
 		if (!existing) {
-			ourNodes.push({node, amount});
-		}
-
-		for (const child of Array.from(node.childNodes)) {
-			child.remove();
+			ourNodes.push({node, amount, convert: pickConvert(amount)});
+			for (const child of Array.from(node.childNodes)) {
+				child.remove();
+			}
 		}
 	}
 
 	const {doReplace} = await browser.storage.local.get('doReplace');
 	console.log(doReplace);
-	for (const {node, amount} of ourNodes) {
+	for (const {node, amount, convert} of ourNodes) {
 		node.textContent = doReplace
-			? `${Math.floor(amount)}d ${Math.floor((amount % 1) * 100)}c`
+			? convert(amount)
 			: `$${Math.floor(amount)}.${Math.floor((amount % 1) * 100)}`;
 	}
 
