@@ -11,3 +11,16 @@ h1#title {
 	border-bottom-width: 2px;
 	border-bottom-color: black;
 }
+
+.button {
+	background-color:#ff6200;
+	color:white;
+	font-size:16px;
+	padding:12px 28px;
+	text-align:center;
+	border-radius:4px;
+	display:inline-block;
+	cursor:pointer;
+	border:none;
+	align-self:center;
+}
