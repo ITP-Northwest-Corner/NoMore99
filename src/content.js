@@ -119,10 +119,10 @@ const conversions = {
 	fallback: {
 		applicable: _ => false,
 		convert(price) {
-			const cost = convertBetween(price, units.DOLLARS, units.hours || 20);
+			const cost = convertBetween(price, units.DOLLARS, units.hours || 0.05);
 			const hours = Math.floor(cost);
 			const minutes = Math.floor((cost * 60) - (hours * 60));
-			if (Math.abs(convertBetween(price, units.DOLLARS, units.hours || 20) % 1) < 0.2) {
+			if (Math.abs(convertBetween(price, units.DOLLARS, units.hours || 0.05) % 1) < 0.2) {
 				return `${Math.round(hours)}h`;
 			}
 
