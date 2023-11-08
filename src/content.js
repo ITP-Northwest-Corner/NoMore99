@@ -1,5 +1,5 @@
-// Const g = storage.local.get;
-// const s = storage.local.set;
+const g = g => browser.storage.local.get(g).then(v => v[g]);
+// Const s = storage.local.set;
 
 /**
  * Takes in a node, and returns the node's content as text.
@@ -72,8 +72,9 @@ function nodeDollarAmount(node, currencySymbol) {
  */
 function findDollarAmounts(node, currencySymbol, threshold) {
 	const maybeCurrency = nodeDollarAmount(node, currencySymbol);
-	if (maybeCurrency === false || maybeCurrency.proportion < threshold) {
-		return Array.from(node.childNodes).flatMap(node => findDollarAmounts(node, currencySymbol, threshold));
+	const foundInChildren = Array.from(node.childNodes).flatMap(node => findDollarAmounts(node, currencySymbol, threshold));
+	if (maybeCurrency === false || maybeCurrency.proportion < threshold || foundInChildren.length > 0) {
+		return foundInChildren;
 	}
 
 	const {amount} = maybeCurrency;
@@ -86,10 +87,10 @@ function findDollarAmounts(node, currencySymbol, threshold) {
 /***
  * @type {Object.<string, number>}
  */
-const units = {DOLLARS: 1, ...browser.storage.local.get('units').units};
+const units = {DOLLARS: 1};
 
 function convertBetween(quantity, from, to) {
-	return (quantity * from) / to;
+	return (quantity * to) / from;
 }
 
 /***
@@ -153,21 +154,28 @@ let timer = 250;
 
 async function go(doTimer = true) {
 	console.log('Running!');
-	Object.assign(units, browser.storage.local.get('units').units);
-	const found = findDollarAmounts(document, '\\$', 0.4);
-	for (const {node, amount} of found) {
-		const existing = ourNodes.some(({node: otherNode, amount: _, convert: __}) => node === otherNode);
-		if (!existing) {
-			ourNodes.push({node, amount, convert: pickConvert(amount)});
-			for (const child of Array.from(node.childNodes)) {
-				child.remove();
+	Object.assign(units, await g('units'));
+	console.log(`Got units ${JSON.stringify(units)}`);
+	if (doTimer) {
+		const found = findDollarAmounts(document, '\\$', 0.6);
+		for (const {node, amount} of found) {
+			const existing = ourNodes.some(({node: otherNode, amount: _, convert: __}) => node === otherNode);
+			if (!existing) {
+				ourNodes.push({node, amount, convert: pickConvert(amount)});
+				for (const child of Array.from(node.childNodes)) {
+					child.remove();
+				}
 			}
 		}
 	}
 
-	const {doReplace} = await browser.storage.local.get('doReplace');
+	const doReplace = await g('doReplace');
 	console.log(doReplace);
 	for (const {node, amount, convert} of ourNodes) {
+		for (const child of Array.from(node.childNodes)) {
+			child.remove();
+		}
+
 		node.textContent = doReplace
 			? convert(amount)
 			: `$${Math.floor(amount)}.${Math.floor((amount % 1) * 100)}`;
@@ -185,6 +193,7 @@ async function go(doTimer = true) {
 go();
 
 browser.runtime.onMessage.addListener((_message, _sender, _response) => {
+	console.log('Got message');
 	go(false);
 });
 

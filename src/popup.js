@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop */
 const qs = s => document.querySelector(s);
-const g = k => browser.storage.local.get(k)[k];
-// Const s = (k, v) => browser.storage.local.set(k, v);
+const g = g => browser.storage.local.get(g).then(v => v[g]);
 
 const DEFAULT_SETTINGS = {
 	units: {hours: 18},
@@ -18,31 +17,33 @@ browser.storage.local.get('units').then(units => {
 qs('#rerun').addEventListener('click', async _event => {
 	await pushToStorage();
 	const query = await browser.tabs.query({currentWindow: true, active: true});
+	console.log('Sending...');
 	for (const tab of query) {
+		console.log(tab.id);
 		browser.tabs.sendMessage(tab.id, {});
 	}
 });
-
-// Qs('#do_replace, .unit').addEventListener('change', pushToStorage);
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
 pullFromStorage();
 
 async function pullFromStorage() {
+	console.log('Loading menu state from storage');
 	qs('#do_replace').checked = await g('doReplace');
 	for (const element of document.querySelectorAll('.unit')) {
 		const units = await g('units') || DEFAULT_SETTINGS.units;
+		console.log(`Got units ${JSON.stringify(units)}`);
 		const name = element.attributes['data-unit-name'].value;
 		let amt = units[name] || 1;
 		if (name === 'hours') {
 			amt = 1 / amt;
 		}
 
-		element.nodeValue = amt;
+		element.value = amt;
 	}
 }
 
-function pushToStorage() {
+async function pushToStorage() {
 	const doReplace = qs('#do_replace').checked;
 	browser.storage.local.set({
 		doReplace,
@@ -54,7 +55,7 @@ function pushToStorage() {
 			amt = 1 / amt;
 		}
 
-		const units = g('units') || DEFAULT_SETTINGS.units;
+		const units = await g('units') || DEFAULT_SETTINGS.units;
 		units[name] = amt;
 		browser.storage.local.set({units});
 	}
