@@ -7,6 +7,10 @@ const DEFAULT_SETTINGS = {
 	doReplace: true,
 };
 
+function convertBetween(quantity, from, to) {
+	return (quantity * to) / from;
+}
+
 // eslint-disable-next-line unicorn/prefer-top-level-await
 browser.storage.local.get('units').then(units => {
 	if (units === undefined) {
