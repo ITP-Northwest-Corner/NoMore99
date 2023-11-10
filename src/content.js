@@ -43,12 +43,12 @@ function nodeDollarAmount(node, currencySymbol) {
 		return false;
 	}
 
-	const regex = new RegExp(`${currencySymbol}[A-z]*\\s?(\\d+)(?:[\\.,](\\d{1,2}))?`, 'g');
+	const regex = new RegExp(`${currencySymbol}[A-z]*\\s?(\\d*,?\\d+)(?:[\\.,](\\d{1,2}))?`, 'g');
 	const matches = text.matchAll(regex);
 	let unmatched = text.length;
 	let output;
 	for (const [matchedString, whole, decimal] of matches) {
-		const newOutput = Number.parseFloat(`${whole}.${decimal || 0}`);
+		const newOutput = Number.parseFloat(`${whole.replace(',', '')}.${decimal || 0}`);
 		unmatched -= matchedString.length;
 		output = output || newOutput;
 	}
@@ -157,7 +157,7 @@ async function go(doTimer = true) {
 	Object.assign(units, await g('units'));
 	console.log(`Got units ${JSON.stringify(units)}`);
 	if (doTimer) {
-		const found = findDollarAmounts(document, '\\$', 0.6);
+		const found = findDollarAmounts(document, '\\$', 0.5);
 		for (const {node, amount} of found) {
 			const existing = ourNodes.some(({node: otherNode, amount: _, convert: __}) => node === otherNode);
 			if (!existing) {
