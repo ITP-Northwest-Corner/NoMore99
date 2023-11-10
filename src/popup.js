@@ -3,7 +3,7 @@ const qs = s => document.querySelector(s);
 const g = g => browser.storage.local.get(g).then(v => v[g]);
 
 const DEFAULT_SETTINGS = {
-	units: {hours: 1 / 20},
+	units: {hours: 1 / 20}, // "A dollar is one twentieth of an hour"
 	doReplace: true,
 };
 
